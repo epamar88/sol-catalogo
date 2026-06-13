@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sol - Venta por Catálogo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2 family=Playfair+Display:ital,wght@0,600;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fffbf7; color: #334155; }
+        .brand-title { font-family: 'Playfair Display', serif; }
+        .sunset-glow { background: radial-gradient(circle at 50% -20%, rgba(251, 146, 60, 0.08) 0%, rgba(255, 251, 247, 0) 70%); }
+        
+        /* Formato alargado premium de revista física */
+        .magazine-card { 
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            height: 340px; 
+        }
+        .magazine-card:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 15px 25px -5px rgba(251, 146, 60, 0.15), 0 8px 10px -6px rgba(251, 146, 60, 0.1);
+        }
+        .cover-img {
+            height: 240px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes sun-glow {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(254, 240, 138, 0.7)); }
+            50% { transform: scale(1.05); filter: drop-shadow(0 0 20px rgba(251, 146, 60, 0.9)); }
+        }
+        .animate-sun {
+            animation: sun-glow 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col sunset-glow">
+
+    <header class="bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 text-white py-12 px-4 shadow-lg relative overflow-hidden">
+        <div class="container mx-auto text-center flex flex-col items-center justify-center">
+            <div class="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center animate-sun mb-4">
+                <svg viewBox="0 0 100 100" class="w-full h-full fill-amber-100">
+                    <circle cx="50" cy="50" r="22" class="fill-yellow-300" />
+                    <path d="M50,8 L50,20 M50,80 L50,92 M8,50 L20,50 M80,50 L92,50 M20,20 L29,29 M71,71 L80,80 M20,80 L29,71 M71,29 L80,20" stroke="#fef08a" stroke-width="6" stroke-linecap="round"/>
+                    <path d="M50,14 L50,18 M50,82 L50,86 M14,50 L18,50 M82,50 L86,50 M24,24 L27,27 M73,73 L76,76 M24,80 L27,77 M73,27 L76,24" stroke="#f97316" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold tracking-tight brand-title text-white">Sol</h1>
+            <span class="text-xs font-bold tracking-[0.4em] uppercase mt-3 block text-orange-50">Venta por Catálogo</span>
+        </div>
+    </header>
+
+    <section class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white/80 border border-orange-100 rounded-3xl p-6 shadow-sm">
+            <h3 class="font-bold text-orange-900 mb-4 text-center">¿Cómo hacer tu pedido?</h3>
+            <div class="grid grid-cols-3 gap-2 text-center text-[10px] md:text-xs text-slate-600">
+                <div class="p-2"><i class="fas fa-mouse-pointer block text-orange-500 mb-1.5 text-base md:text-lg"></i> Elige catálogo</div>
+                <div class="p-2"><i class="fas fa-camera block text-orange-500 mb-1.5 text-base md:text-lg"></i> Toma captura</div>
+                <div class="p-2"><i class="fab fa-whatsapp block text-orange-500 mb-1.5 text-base md:text-lg"></i> Envía por WhatsApp</div>
+            </div>
+        </div>
+    </section>
+
+    <main class="flex-grow container mx-auto px-4 pb-16 max-w-7xl">
+        <div id="magazineGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <!-- Las tarjetas se inyectan dinámicamente -->
+        </div>
+        
+        <div id="emptyState" class="hidden text-center py-20 text-orange-400 bg-white/50 rounded-3xl border border-dashed border-orange-200">
+            <i class="fas fa-box-open text-5xl mb-4 opacity-50"></i>
+            <p class="text-lg font-medium">No hay revistas disponibles en este momento.</p>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-orange-100 py-12 text-center">
+        <div class="brand-title text-3xl text-orange-400 font-bold mb-2">Sol</div>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-8 italic">Trayectoria y confianza desde 2004</p>
+        
+        <div class="inline-block p-6 rounded-3xl bg-slate-50 border border-slate-100 shadow-sm w-11/12 md:w-auto max-w-md">
+            <h5 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Medios de Pago</h5>
+            <div class="flex justify-center gap-6 text-2xl text-slate-400 mb-4">
+                <i class="fas fa-mobile-screen-button" title="Nequi / Ahorros"></i>
+                <i class="fas fa-key" title="Daviplata / Llave"></i>
+                <i class="fas fa-hand-holding-usd" title="Efectivo"></i>
+                <i class="fas fa-wallet" title="Pago Flexible"></i>
+            </div>
+            <p id="paymentTextDisplay" class="text-xs text-slate-600 font-medium">Nequi / Llave: 300 591 9059</p>
+            <p id="paymentFlexDisplay" class="text-xs text-slate-500 mt-1">Pago flexible: Efectivo o transferencia (Acordado con asesor)</p>
+        </div>
+
+        <div class="mt-8">
+            <button id="toggleAdminBtn" class="text-xs text-slate-400 hover:text-orange-500 transition-colors font-medium bg-slate-100 px-4 py-2 rounded-full border border-slate-200/60 inline-flex items-center gap-2">
+                <i class="fas fa-lock"></i> Gestionar Kiosco (Solo tú)
+            </button>
+        </div>
+    </footer>
+
+    <a id="whatsappFloatingBtn" href="#" target="_blank" class="fixed bottom-6 right-6 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-3 rounded-full shadow-lg z-40 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 text-sm">
+        <i class="fab fa-whatsapp text-lg"></i>
+        <span class="font-semibold">Pedido</span>
+    </a>
+
+    <button id="aiFloatingBtn" class="fixed bottom-6 left-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-3 rounded-full shadow-lg z-40 transition-all hover:scale-105 active:scale-95 flex items-center gap-2 text-sm">
+        <i class="fas fa-sparkles text-yellow-200"></i>
+        <span class="font-semibold">Sol IA Asistente</span>
+    </button>
+
+    <div id="aiChatWindow" class="hidden fixed bottom-24 left-6 w-[90%] sm:w-[380px] h-[480px] max-h-[80vh] bg-white border border-orange-100 rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden transition-all duration-300">
+        <div class="bg-gradient-to-r from-amber-400 to-orange-500 p-4 text-white flex justify-between items-center shadow-md">
+            <div class="flex items-center gap-2">
+                <div class="bg-white/20 p-2 rounded-xl">
+                    <i class="fas fa-sparkles text-yellow-200"></i>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm">Asistente Virtual Sol</h4>
+                    <p class="text-[9px] text-orange-100">Consultas de catálogos y armado de pedidos</p>
+                </div>
+            </div>
+            <button id="closeAiChatBtn" class="text-white hover:text-orange-200 transition-colors p-1">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <div id="aiChatBody" class="flex-grow p-4 overflow-y-auto space-y-3 bg-orange-50/10 text-xs">
+            <div class="bg-white border border-orange-50 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm text-slate-700">
+                ¡Hola! Soy tu asistente de compras de <strong>Sol - Venta por Catálogo</strong>. ☀️<br><br>
+                ¿En qué puedo colaborarte hoy?
+                <ul class="list-disc pl-4 mt-2 space-y-1 text-slate-600">
+                    <li>Recomendar catálogos o marcas.</li>
+                    <li>Sugerir productos populares.</li>
+                    <li>Organizar tu lista de pedido para enviar por WhatsApp.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="aiChatLoading" class="hidden px-4 py-2 flex items-center gap-1.5 text-[10px] text-slate-400 bg-white font-medium">
+            <i class="fas fa-circle-notch animate-spin text-orange-500"></i> Sol IA está buscando ideas...
+        </div>
+
+        <div class="p-2 border-t border-orange-50 bg-white overflow-x-auto whitespace-nowrap hide-scrollbar flex gap-2">
+            <button onclick="sendQuickQuestion('¿Qué catálogo tiene ropa de moda actual o deportiva?')" class="bg-orange-50 hover:bg-orange-100 text-orange-700 text-[10px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0">
+                ✨ ¿Ropa de moda?
+            </button>
+            <button onclick="sendQuickQuestion('Recomiéndame fragancias o maquillaje de Yanbal, Avon o Esika')" class="bg-orange-50 hover:bg-orange-100 text-orange-700 text-[10px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0">
+                ✨ Cosméticos y perfumes
+            </button>
+            <button onclick="sendQuickQuestion('Ayúdame a organizar un pedido de catálogo en una lista limpia')" class="bg-orange-50 hover:bg-orange-100 text-orange-700 text-[10px] font-bold px-3 py-1.5 rounded-full transition-colors flex-shrink-0">
+                ✨ Organizar mi pedido
+            </button>
+        </div>
+
+        <form id="aiChatForm" class="p-3 border-t border-orange-100 bg-white flex gap-2">
+            <input type="text" id="aiChatInput" required placeholder="Hazme una pregunta sobre las revistas..." class="flex-grow px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:border-orange-400 focus:bg-white transition-all">
+            <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white p-2.5 rounded-xl transition-colors flex items-center justify-center">
+                <i class="fas fa-paper-plane text-xs"></i>
+            </button>
+        </form>
+    </div>
+
+    <div id="passwordModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4 transition-opacity duration-200 opacity-0">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center text-white">
+            <div class="w-12 h-12 bg-orange-500/20 text-orange-400 rounded-2xl flex items-center justify-center text-xl mx-auto mb-3">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h4 class="text-base font-bold mb-1">Clave de Administrador</h4>
+            <p class="text-slate-400 text-[10px] mb-4">Ingresa tu contraseña para configurar el Kiosco.</p>
+            <input type="password" id="adminPasswordInput" class="w-full px-4 py-2.5 mb-4 bg-slate-950 border border-slate-800 rounded-xl text-white text-center text-sm focus:outline-none focus:border-orange-500" placeholder="••••">
+            <div class="flex gap-3 justify-center">
+                <button id="cancelPasswordBtn" class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold py-2 px-4 rounded-xl text-xs">Cancelar</button>
+                <button id="submitPasswordBtn" class="bg-orange-500 hover:bg-orange-400 text-white font-semibold py-2 px-4 rounded-xl text-xs">Acceder</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="hidden fixed top-0 left-0 w-full h-full bg-slate-950/80 backdrop-blur-sm text-white z-50 flex items-center justify-center p-2 md:p-4 transform transition-opacity duration-300 opacity-0">
+        <div class="bg-slate-900 rounded-3xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col overflow-hidden border border-slate-800">
+            <div class="flex justify-between items-center p-5 md:p-6 border-b border-slate-800 bg-slate-950/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400">
+                        <i class="fas fa-sliders-h text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg md:text-xl font-semibold text-white">Administrador del Kiosco Sol</h3>
+                        <p class="text-[10px] md:text-xs text-slate-400">Configura enlaces de catálogos, portadas visuales, fechas de cierre y contacto.</p>
+                    </div>
+                </div>
+                <button id="closeAdminBtn" class="text-slate-400 hover:text-rose-450 p-2 rounded-lg">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-4 md:p-6 overflow-y-auto flex-grow flex flex-col gap-6 hide-scrollbar text-slate-200">
+                
+                <!-- Ajustes Generales -->
+                <div class="bg-slate-950/40 p-4 rounded-2xl border border-slate-800">
+                    <h4 class="font-medium text-orange-400 mb-4 flex items-center gap-2 text-sm md:text-base"><i class="fas fa-wallet"></i> Datos de Contacto, Pagos y Clave</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">Celular WhatsApp (Con indicativo, ej: 573005919059)</label>
+                            <input type="text" id="adminPhone" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">Texto Nequi / Llave</label>
+                            <input type="text" id="adminPaymentText" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">Texto Pago Flexible</label>
+                            <input type="text" id="adminPaymentFlex" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">Clave de Kiosco (Por defecto: 1234)</label>
+                            <input type="password" id="adminPassSettings" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500">
+                        </div>
+                    </div>
+                    <div class="mt-3 flex justify-end">
+                        <button onclick="saveContactSettings()" class="bg-orange-500 hover:bg-orange-400 text-white font-bold py-2 px-5 rounded-xl text-xs transition duration-200">
+                            <i class="fas fa-save mr-1.5"></i> Guardar Ajustes Generales
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/60 p-5 rounded-2xl border border-dashed border-orange-500/30 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div>
+                        <h4 class="font-bold text-orange-400 flex items-center gap-2 text-sm md:text-base"><i class="fas fa-download"></i> Guardar Cambios para Netlify</h4>
+                        <p class="text-[11px] text-slate-400 mt-1">Cada vez que agregues revistas, cambies portadas o modifiques precios, haz clic en este botón para descargar tu archivo <strong>index.html</strong> actualizado. Luego, arrastra ese archivo a Netlify. ¡Tus clientes lo verán actualizado al instante!</p>
+                    </div>
+                    <button onclick="downloadUpdatedTemplate()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold py-3 px-6 rounded-xl text-xs md:text-sm transition duration-200 flex items-center gap-2 flex-shrink-0 shadow-lg">
+                        <i class="fas fa-file-code text-base"></i> Descargar index.html Actualizado
+                    </button>
+                </div>
+
+                <div class="flex flex-col lg:flex-row gap-6">
+                    <div class="w-full lg:w-1/3">
+                        <div class="bg-slate-950/40 p-5 rounded-2xl border border-slate-800/80">
+                            <h4 class="font-medium mb-4 text-emerald-400 flex items-center gap-2 text-sm md:text-base"><i class="fas fa-plus-circle"></i> Nueva Revista</h4>
+                            <form id="addMagazineForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">Nombre de la revista</label>
+                                    <input type="text" id="newMagName" required placeholder="Ej: Yanbal" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">Cierre (Ej: 10 MAY, 25 ABR)</label>
+                                    <input type="text" id="newMagDate" required placeholder="Ej: 10 MAY" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-400 mb-1.5 uppercase">URL Foto de Portada (Opcional)</label>
+                                    <input type="text" id="newMagCover" placeholder="https://enlace-de-imagen.jpg" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-orange-500">
+                                </div>
+                                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl transition text-xs md:text-sm">
+                                    Agregar al Kiosco
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="w-full lg:w-2/3 bg-slate-950/20 p-5 rounded-2xl border border-slate-800/50">
+                        <h4 class="font-medium mb-4 text-orange-400 flex items-center gap-2 text-sm md:text-base"><i class="fas fa-edit"></i> Configurar Enlaces, Portadas y Cierres</h4>
+                        <div id="adminManageList" class="space-y-4 max-h-[45vh] overflow-y-auto pr-1">
+                            <!-- Se inyecta dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="confirmModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-[80] flex items-center justify-center p-4 transition-opacity duration-200 opacity-0">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center text-white">
+            <h4 class="text-lg font-bold mb-2">¿Eliminar catálogo?</h4>
+            <p class="text-slate-400 text-xs mb-6">Esta acción quitará permanentemente a <span id="confirmTargetName" class="font-semibold text-orange-400"></span> de tu Kiosco.</p>
+            <div class="flex gap-3 justify-center">
+                <button id="cancelConfirmBtn" class="bg-slate-800 hover:bg-slate-750 text-slate-300 font-semibold py-2 px-5 rounded-xl text-xs">Cancelar</button>
+                <button id="acceptConfirmBtn" class="bg-rose-600 hover:bg-rose-500 text-white font-semibold py-2 px-5 rounded-xl text-xs">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DATOS INICIALES ---
+        // Portadas modelo precargadas. Estas variables serán sobreescritas automáticamente por la descarga.
+        const defaultMagazines = [
+            { id: 1, name: 'Yanbal', deadline: '25 ABR', bg: 'bg-orange-50', link: '#', cover: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&q=80' },
+            { id: 2, name: 'Pacifika', deadline: '28 ABR', bg: 'bg-emerald-50', link: '#', cover: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&q=80' },
+            { id: 3, name: 'Leonisa', deadline: '05 MAY', bg: 'bg-pink-50', link: '#', cover: 'https://images.unsplash.com/photo-1562572159-4ebcd318f2dd?w=400&q=80' },
+            { id: 4, name: 'Loguin', deadline: '05 MAY', bg: 'bg-blue-50', link: '#', cover: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&q=80' },
+            { id: 5, name: 'Carmel', deadline: '10 MAY', bg: 'bg-green-50', link: '#', cover: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=400&q=80' },
+            { id: 6, name: 'Natura', deadline: '10 MAY', bg: 'bg-yellow-50', link: '#', cover: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80' },
+            { id: 7, name: 'Avon', deadline: '10 MAY', bg: 'bg-purple-50', link: '#', cover: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=400&q=80' },
+            { id: 9, name: 'Esika', deadline: '14 MAY', bg: 'bg-rose-50', link: '#', cover: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=400&q=80' },
+            { id: 10, name: 'Cyzone', deadline: '14 MAY', bg: 'bg-cyan-50', link: '#', cover: 'https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=400&q=80' },
+            { id: 11, name: "L'Bel", deadline: '14 MAY', bg: 'bg-amber-50', link: '#', cover: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=400&q=80' }
+        ];
+
+        const defaultSettings = {
+            phone: '573005919059',
+            paymentText: 'Nequi / Llave: 300 591 9059',
+            paymentFlex: 'Pago flexible: Efectivo o transferencia (Acordado con asesor)',
+            pass: '1234'
+        };
+
+        let magazines = JSON.parse(localStorage.getItem('kiosco_sol_magazines_v7')) || defaultMagazines;
+        let settings = JSON.parse(localStorage.getItem('kiosco_sol_settings_v7')) || defaultSettings;
+        let deleteTargetId = null;
+
+        const apiKey = ""; 
+
+        function saveToStorage() {
+            localStorage.setItem('kiosco_sol_magazines_v7', JSON.stringify(magazines));
+        }
+
+        function saveSettingsToStorage() {
+            localStorage.setItem('kiosco_sol_settings_v7', JSON.stringify(settings));
+        }
+
+        // --- 2. ELEMENTOS DEL DOM ---
+        const grid = document.getElementById('magazineGrid');
+        const emptyState = document.getElementById('emptyState');
+        const adminPanel = document.getElementById('adminPanel');
+        const toggleAdminBtn = document.getElementById('toggleAdminBtn');
+        const closeAdminBtn = document.getElementById('closeAdminBtn');
+        const addMagazineForm = document.getElementById('addMagazineForm');
+        
+        const adminPhone = document.getElementById('adminPhone');
+        const adminPaymentText = document.getElementById('adminPaymentText');
+        const adminPaymentFlex = document.getElementById('adminPaymentFlex');
+        const adminPassSettings = document.getElementById('adminPassSettings');
+        const paymentTextDisplay = document.getElementById('paymentTextDisplay');
+        const paymentFlexDisplay = document.getElementById('paymentFlexDisplay');
+        const whatsappFloatingBtn = document.getElementById('whatsappFloatingBtn');
+
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmTargetName = document.getElementById('confirmTargetName');
+        const acceptConfirmBtn = document.getElementById('acceptConfirmBtn');
+        const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+
+        const aiFloatingBtn = document.getElementById('aiFloatingBtn');
+        const aiChatWindow = document.getElementById('aiChatWindow');
+        const closeAiChatBtn = document.getElementById('closeAiChatBtn');
+        const aiChatForm = document.getElementById('aiChatForm');
+        const aiChatInput = document.getElementById('aiChatInput');
+        const aiChatBody = document.getElementById('aiChatBody');
+        const aiChatLoading = document.getElementById('aiChatLoading');
+
+        const passwordModal = document.getElementById('passwordModal');
+        const adminPasswordInput = document.getElementById('adminPasswordInput');
+        const cancelPasswordBtn = document.getElementById('cancelPasswordBtn');
+        const submitPasswordBtn = document.getElementById('submitPasswordBtn');
+
+        // --- 3. FUNCIONES DE RENDERIZADO ---
+        function renderCatalog() {
+            grid.innerHTML = '';
+            if (magazines.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+            } else {
+                grid.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+                
+                grid.innerHTML = magazines.map(mag => {
+                    const clickAction = mag.link === '#' || mag.link === '' 
+                        ? `onclick="handleLinkClick(event, '${mag.name.replace(/'/g, "\\'")}')"` 
+                        : `onclick="window.open('${mag.link}', '_blank')"` ;
+
+                    const coverElement = mag.cover && mag.cover.trim() !== ''
+                        ? `<img src="${mag.cover}" alt="Catálogo ${mag.name}" class="cover-img rounded-t-3xl shadow-inner" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\\'cover-img flex items-center justify-center bg-orange-100 rounded-t-3xl text-orange-400 font-bold\\'><i class=\\'fas fa-book-open text-3xl\\'></i></div>'">`
+                        : `<div class="cover-img flex items-center justify-center bg-gradient-to-br from-orange-100/50 to-amber-100/50 rounded-t-3xl text-orange-400 font-bold"><i class="fas fa-book-open text-4xl"></i></div>`;
+
+                    return `
+                        <div ${clickAction} data-id="${mag.id}" class="magazine-card ${mag.bg || 'bg-slate-50'} rounded-[32px] text-center shadow-sm cursor-pointer flex flex-col justify-between border border-black/5 overflow-hidden">
+                            <div class="flex-grow flex flex-col justify-start">
+                                ${coverElement}
+                                <h3 class="font-extrabold text-slate-800 text-[13px] truncate uppercase mt-3 tracking-wider px-2">${mag.name}</h3>
+                            </div>
+                            <div class="px-3 pb-3">
+                                <div class="bg-white/90 py-2 rounded-full text-[10px] font-extrabold text-slate-500 uppercase tracking-widest shadow-sm">
+                                    Cierre: ${mag.deadline}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderAdminList() {
+            const adminManageList = document.getElementById('adminManageList');
+            adminManageList.innerHTML = '';
+            if (magazines.length === 0) return;
+
+            adminManageList.innerHTML = magazines.map(mag => `
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col gap-3 shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-850 pb-2">
+                        <span class="text-sm font-bold text-slate-200 uppercase">${mag.name}</span>
+                        <span class="text-[9px] text-slate-500 uppercase bg-slate-950 px-2 py-0.5 rounded-md">ID: ${mag.id}</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="relative">
+                            <span class="absolute -top-2 left-2 bg-slate-900 px-1 text-[8px] text-slate-400 font-semibold uppercase">Enlace Catálogo</span>
+                            <input type="text" id="link-${mag.id}" value="${mag.link === '#' ? '' : mag.link}" placeholder="https://..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-orange-500 focus:outline-none">
+                        </div>
+                        <div class="relative">
+                            <span class="absolute -top-2 left-2 bg-slate-900 px-1 text-[8px] text-slate-400 font-semibold uppercase">Cierre</span>
+                            <input type="text" id="date-${mag.id}" value="${mag.deadline}" placeholder="10 MAY" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-orange-500 focus:outline-none">
+                        </div>
+                        <div class="relative">
+                            <span class="absolute -top-2 left-2 bg-slate-900 px-1 text-[8px] text-slate-400 font-semibold uppercase">Enlace de Imagen (Portada)</span>
+                            <input type="text" id="cover-${mag.id}" value="${mag.cover || ''}" placeholder="https://enlace-imagen.jpg" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs focus:border-orange-500 focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-1">
+                        <button onclick="updateCatalog(${mag.id})" class="bg-orange-500 hover:bg-orange-400 text-white px-4 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 font-bold shadow" title="Guardar">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                        <button onclick="triggerDelete(${mag.id}, '${mag.name.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-rose-500 hover:text-white text-rose-450 px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i> Quitar
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderSettings() {
+            paymentTextDisplay.textContent = settings.paymentText;
+            paymentFlexDisplay.textContent = settings.paymentFlex;
+
+            const msg = encodeURIComponent("¡Hola! Te envío mi pedido para el catálogo.");
+            whatsappFloatingBtn.href = `https://wa.me/${settings.phone}?text=${msg}`;
+
+            adminPhone.value = settings.phone;
+            adminPaymentText.value = settings.paymentText;
+            adminPaymentFlex.value = settings.paymentFlex;
+            adminPassSettings.value = settings.pass || '1234';
+        }
+
+        function saveContactSettings() {
+            settings.phone = adminPhone.value.trim();
+            settings.paymentText = adminPaymentText.value.trim();
+            settings.paymentFlex = adminPaymentFlex.value.trim();
+            settings.pass = adminPassSettings.value.trim() || '1234';
+            saveSettingsToStorage();
+            renderSettings();
+            showNotification('Ajustes generales actualizados con éxito', 'success');
+        }
+
+        // --- 4. ACCIONES DE GESTIÓN ---
+        function handleLinkClick(event, name) {
+            event.stopPropagation();
+            showNotification(`Configura el enlace de "${name}" en "Gestionar Kiosco" en el pie de página.`, 'error');
+        }
+
+        addMagazineForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('newMagName').value;
+            const deadline = document.getElementById('newMagDate').value;
+            const cover = document.getElementById('newMagCover').value.trim();
+            const newId = Date.now();
+
+            const colors = ['bg-orange-50', 'bg-emerald-50', 'bg-pink-50', 'bg-blue-50', 'bg-green-50', 'bg-yellow-50', 'bg-purple-50', 'bg-red-50', 'bg-rose-50', 'bg-cyan-50', 'bg-amber-50'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+            magazines.push({ 
+                id: newId, 
+                name: name, 
+                deadline: deadline, 
+                link: '#', 
+                bg: randomColor,
+                cover: cover
+            });
+            
+            saveToStorage(); 
+            updateAllViews(); 
+            addMagazineForm.reset();
+            showNotification('¡Catálogo añadido exitosamente!', 'success');
+        });
+
+        function updateCatalog(id) {
+            const linkInput = document.getElementById(`link-${id}`);
+            const dateInput = document.getElementById(`date-${id}`);
+            const coverInput = document.getElementById(`cover-${id}`);
+            const idx = magazines.findIndex(m => m.id === id);
+            
+            if (idx !== -1) {
+                magazines[idx].link = linkInput.value.trim() || '#';
+                magazines[idx].deadline = dateInput.value.trim() || 'S/F';
+                magazines[idx].cover = coverInput.value.trim();
+                saveToStorage(); 
+                updateAllViews();
+                showNotification('¡Datos del catálogo actualizados!', 'success');
+            }
+        }
+
+        function triggerDelete(id, name) {
+            deleteTargetId = id;
+            confirmTargetName.textContent = name;
+            confirmModal.classList.remove('hidden');
+            setTimeout(() => confirmModal.classList.remove('opacity-0'), 10);
+        }
+
+        cancelConfirmBtn.addEventListener('click', () => {
+            confirmModal.classList.add('opacity-0');
+            setTimeout(() => {
+                confirmModal.classList.add('hidden');
+                deleteTargetId = null;
+            }, 200);
+        });
+
+        acceptConfirmBtn.addEventListener('click', () => {
+            if (deleteTargetId !== null) {
+                magazines = magazines.filter(mag => mag.id !== deleteTargetId);
+                saveToStorage(); 
+                updateAllViews();
+                showNotification('Catálogo eliminado correctamente.', 'info');
+                
+                confirmModal.classList.add('opacity-0');
+                setTimeout(() => {
+                    confirmModal.classList.add('hidden');
+                    deleteTargetId = null;
+                }, 200);
+            }
+        });
+
+        function updateAllViews() { 
+            renderCatalog(); 
+            renderAdminList(); 
+            renderSettings();
+        }
+
+        // Notificaciones Flotantes
+        function showNotification(message, type = 'info') {
+            const toast = document.createElement('div');
+            let border = 'border-sky-500';
+            if (type === 'success') border = 'border-emerald-500';
+            if (type === 'error') border = 'border-rose-500';
+            toast.className = `fixed bottom-4 right-4 bg-slate-900 border-l-4 ${border} text-white px-5 py-3 rounded-2xl shadow-xl z-[70] flex items-center font-medium transition-all duration-300 text-xs md:text-sm`;
+            toast.innerHTML = `<span>${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 350);
+            }, 3000);
+        }
+
+        // Control de Acceso con Contraseña (Seguridad)
+        toggleAdminBtn.addEventListener('click', () => {
+            passwordModal.classList.remove('hidden');
+            setTimeout(() => passwordModal.classList.remove('opacity-0'), 10);
+            adminPasswordInput.focus();
+        });
+
+        cancelPasswordBtn.addEventListener('click', () => {
+            passwordModal.classList.add('opacity-0');
+            adminPasswordInput.value = '';
+            setTimeout(() => passwordModal.classList.add('hidden'), 200);
+        });
+
+        submitPasswordBtn.addEventListener('click', () => {
+            const typedPass = adminPasswordInput.value.trim();
+            const correctPass = settings.pass || '1234';
+
+            if (typedPass === correctPass) {
+                passwordModal.classList.add('opacity-0');
+                setTimeout(() => passwordModal.classList.add('hidden'), 200);
+                adminPasswordInput.value = '';
+                
+                // Abrir panel admin
+                adminPanel.classList.remove('hidden'); 
+                setTimeout(() => adminPanel.classList.remove('opacity-0'), 10); 
+            } else {
+                showNotification('Contraseña incorrecta', 'error');
+                adminPasswordInput.value = '';
+                adminPasswordInput.focus();
+            }
+        });
+
+        adminPasswordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitPasswordBtn.click();
+        });
+
+        closeAdminBtn.addEventListener('click', () => { 
+            adminPanel.classList.add('opacity-0'); 
+            setTimeout(() => adminPanel.classList.add('hidden'), 300); 
+        });
+
+        // --- 5. LOGICA DE INTELIGENCIA ARTIFICIAL (GEMINI API) ---
+        
+        async function fetchWithBackoff(url, options, maxRetries = 5) {
+            let delay = 1000;
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    if (response.status !== 429 && response.status < 500) {
+                        throw new Error(`HTTP Error: ${response.status}`);
+                    }
+                } catch (e) {
+                    if (i === maxRetries - 1) throw e;
+                }
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+            throw new Error("Failed after retries");
+        }
+
+        async function sendQueryToGemini(userQuery) {
+            const magazinesListText = magazines.map(m => `- ${m.name} (Cierre de pedido: ${m.deadline}) ${m.link !== '#' ? '[Ver Catálogo](' + m.link + ')' : ''}`).join('\n');
+            const systemPrompt = `Eres el asistente inteligente de compras del Kiosco Virtual "Sol" de venta por catálogo.
+Tu objetivo es ayudar amablemente a los clientes a encontrar catálogos ideales, recomendar marcas y organizar sus pedidos para enviarlos por WhatsApp.
+
+Aquí tienes la lista actual de nuestros catálogos activos y sus cierres:
+${magazinesListText}
+
+Medios de pago autorizados:
+- ${settings.paymentText}
+- ${settings.paymentFlex}
+
+Instrucciones para tus respuestas:
+1. Sé sumamente amable, alegre, clara y usa un tono de confianza (como una asesora de confianza). Utiliza emojis de Sol y estrellas (☀️, ✨, 🛍️).
+2. Si te piden organizar un pedido, genera un formato limpio y ordenado de lista (ej: "🛍️ *MI PEDIDO SOL* \n- Catálogo: Avon\n- Página: ... \n- Código o Producto: ...") para que el cliente pueda copiarlo fácilmente.
+3. Invítalos amablemente a dar clic en las tarjetas de los catálogos correspondientes para abrirlos y tomar capturas.
+4. Responde en español de forma concisa y amigable.`;
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            const response = await fetchWithBackoff(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "Disculpa, no logré procesar tu consulta en este momento. Inténtalo de nuevo.";
+        }
+
+        aiFloatingBtn.addEventListener('click', () => {
+            aiChatWindow.classList.remove('hidden');
+            setTimeout(() => {
+                aiChatWindow.classList.remove('opacity-0');
+            }, 10);
+        });
+
+        closeAiChatBtn.addEventListener('click', () => {
+            aiChatWindow.classList.add('opacity-0');
+            setTimeout(() => {
+                aiChatWindow.classList.add('hidden');
+            }, 300);
+        });
+
+        async function handleUserChatMessage(messageText) {
+            if (!messageText.trim()) return;
+
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = "bg-orange-500 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] ml-auto shadow-sm self-end";
+            userMsgDiv.textContent = messageText;
+            aiChatBody.appendChild(userMsgDiv);
+            aiChatBody.scrollTop = aiChatBody.scrollHeight;
+
+            aiChatLoading.classList.remove('hidden');
+
+            try {
+                const responseText = await sendQueryToGemini(messageText);
+                
+                const aiMsgDiv = document.createElement('div');
+                aiMsgDiv.className = "bg-white border border-orange-50 p-3 rounded-2xl rounded-tl-none max-w-[85%] shadow-sm text-slate-700 whitespace-pre-line";
+                aiMsgDiv.innerHTML = responseText;
+                aiChatBody.appendChild(aiMsgDiv);
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = "bg-rose-50 border border-rose-150 p-3 rounded-2xl text-rose-700";
+                errorDiv.textContent = "Hubo un problema de conexión con la IA. Asegúrate de estar conectado a Internet e inténtalo de nuevo.";
+                aiChatBody.appendChild(errorDiv);
+            } finally {
+                aiChatLoading.classList.add('hidden');
+                aiChatBody.scrollTop = aiChatBody.scrollHeight;
+            }
+        }
+
+        aiChatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const messageText = aiChatInput.value;
+            aiChatInput.value = '';
+            handleUserChatMessage(messageText);
+        });
+
+        function sendQuickQuestion(questionText) {
+            handleUserChatMessage(questionText);
+        }
+
+        // --- 6. SISTEMA INTELIGENTE DE EXPORTACIÓN Y DESCARGA DE PLANTILLA ---
+        async function downloadUpdatedTemplate() {
+            try {
+                let sourceCode = "";
+                // Intentamos leer el código original para no perder comentarios ni estructura
+                try {
+                    const response = await fetch(window.location.href);
+                    if (response.ok) {
+                        sourceCode = await response.text();
+                    }
+                } catch (e) {
+                    console.log("No se pudo leer localmente, reconstruyendo desde el DOM actual...");
+                }
+                
+                if (!sourceCode) {
+                    sourceCode = "<!DOCTYPE html>\n<html lang=\"es\">\n" + document.documentElement.outerHTML + "\n</html>";
+                }
+                
+                // Formateamos los datos actuales para inyectarlos como los nuevos valores "Preestablecidos"
+                const magazinesJson = JSON.stringify(magazines, null, 12);
+                const settingsJson = JSON.stringify(settings, null, 12);
+                
+                // Reemplazamos los arrays por defecto en el código descargable
+                sourceCode = sourceCode.replace(/const defaultMagazines\s*=\s*\[[\s\S]*?\];/g, `const defaultMagazines = ${magazinesJson};`);
+                sourceCode = sourceCode.replace(/const defaultSettings\s*=\s*\{[\s\S]*?\};/g, `const defaultSettings = ${settingsJson};`);
+                
+                // Limpiamos los estados de las ventanas abiertas para que el HTML inicie limpio al abrirse
+                sourceCode = sourceCode.replace(/id="adminPanel" class="([\s\S]*?)"/g, 'id="adminPanel" class="hidden fixed top-0 left-0 w-full h-full bg-slate-950/80 backdrop-blur-sm text-white z-50 flex items-center justify-center p-2 md:p-4 transform transition-opacity duration-300 opacity-0"');
+                sourceCode = sourceCode.replace(/id="passwordModal" class="([\s\S]*?)"/g, 'id="passwordModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[90] flex items-center justify-center p-4 transition-opacity duration-200 opacity-0"');
+                sourceCode = sourceCode.replace(/id="confirmModal" class="([\s\S]*?)"/g, 'id="confirmModal" class="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-[80] flex items-center justify-center p-4 transition-opacity duration-200 opacity-0"');
+                sourceCode = sourceCode.replace(/id="aiChatWindow" class="([\s\S]*?)"/g, 'id="aiChatWindow" class="hidden fixed bottom-24 left-6 w-[90%] sm:w-[380px] h-[480px] max-h-[80vh] bg-white border border-orange-100 rounded-3xl shadow-2xl z-50 flex flex-col overflow-hidden transition-all duration-300"');
+                
+                // Generamos la descarga del archivo index.html listo para subir a Netlify
+                const blob = new Blob([sourceCode], { type: 'text/html;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'index.html';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification('¡Archivo index.html descargado! Súbelo a Netlify para aplicar los cambios a nivel global.', 'success');
+            } catch (error) {
+                console.error(error);
+                showNotification('Ocurrió un inconveniente al generar tu archivo.', 'error');
+            }
+        }
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAllViews();
+            
+            if (typeof Sortable !== 'undefined') {
+                Sortable.create(grid, {
+                    animation: 200, 
+                    delay: 150, 
+                    delayOnTouchOnly: true, 
+                    ghostClass: 'opacity-40',
+                    onEnd: function () {
+                        const newOrderIds = Array.from(grid.children).map(card => parseInt(card.dataset.id));
+                        magazines = newOrderIds.map(id => magazines.find(m => m.id === id));
+                        saveToStorage(); 
+                        showNotification('¡Orden del catálogo actualizado!', 'success');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
